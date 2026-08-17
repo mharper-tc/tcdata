@@ -1,0 +1,16 @@
+[project]
+name = "tcdata"
+version = "0.1.0"
+description = "Taylor Collison alt-data client library"
+requires-python = ">=3.9"
+dependencies = [
+    "requests>=2.28",
+    "pandas>=1.5",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/tcdata"]
