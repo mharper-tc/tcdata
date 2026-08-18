@@ -1,11 +1,12 @@
 """
 tcdata - Taylor Collison alt-data client library.
 
-Analysts end a scraper with:
+Analysts start a scraper with:
 
     import tcdata
-    tcdata.push(dataset_id=1, df=my_wide_dataframe)   # time-series
-    tcdata.attach(dataset_id=1, filepath="note.pdf")  # a file
+    dataset = tcdata.create_dataset(ticker="AAPL", name="Daily Close Price")
+    tcdata.push(dataset_id=dataset["id"], df=my_wide_dataframe)   # time-series
+    tcdata.attach(dataset_id=dataset["id"], filepath="note.pdf")  # a file
 
 Requires the TC_DATA_KEY environment variable (the analyst's API key).
 The wide -> narrow melt happens here, so scrapers stay simple.
@@ -15,7 +16,7 @@ import os
 import requests
 import pandas as pd
 
-__version__ = "0.2.0"
+__version__ = "0.3.0"
 
 DEFAULT_URL = "https://web-production-80d10.up.railway.app"
 
@@ -36,6 +37,41 @@ def _api_key() -> str:
 
 def _headers() -> dict:
     return {"X-API-Key": _api_key()}
+
+
+def create_dataset(
+    ticker: str,
+    name: str,
+    kind: str = "timeseries",
+    description: str | None = None,
+    frequency: str | None = None,
+    coverage: str | None = None,
+) -> dict:
+    """
+    Create a new dataset you'll then push/attach data to. Returns the created
+    row, including its "id" -- pass that as dataset_id to push()/attach().
+
+    kind is "timeseries" for push() data or "file" for attach() (PDF/CSV)
+    datasets.
+    """
+    if kind not in ("timeseries", "file"):
+        raise ValueError("kind must be 'timeseries' or 'file'")
+
+    resp = requests.post(
+        f"{_base_url()}/datasets",
+        json={
+            "ticker": ticker,
+            "name": name,
+            "kind": kind,
+            "description": description,
+            "frequency": frequency,
+            "coverage": coverage,
+        },
+        headers=_headers(),
+        timeout=30,
+    )
+    resp.raise_for_status()
+    return resp.json()
 
 
 def push(
