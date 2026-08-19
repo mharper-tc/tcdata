@@ -109,10 +109,12 @@ corrections/backfills).
 
 #### Optional: tell the frontend how to display a metric
 
-`column_formats` maps metric name -> display format (`"usd"`, `"percent"`,
-`"number"`; anything else falls back to a plain number). It merges with
-whatever's already set, so you only need to pass it when introducing a new
-metric or changing an existing one:
+`column_formats` maps metric name -> display format. Supported values:
+`"usd"`, `"percent"`, `"number"`, `"thousands"`, `"millions"`, `"billions"`,
+`"trillions"` (the last four divide the value and append K/M/B/T — handy for
+large counts like token volumes). Anything else falls back to a plain number.
+It merges with whatever's already set, so you only need to pass it when
+introducing a new metric or changing an existing one:
 
 ```python
 tcdata.push(
