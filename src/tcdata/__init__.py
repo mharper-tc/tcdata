@@ -16,7 +16,7 @@ import os
 import requests
 import pandas as pd
 
-__version__ = "0.3.0"
+__version__ = "0.4.0"
 
 DEFAULT_URL = "https://web-production-80d10.up.railway.app"
 
@@ -43,6 +43,7 @@ def create_dataset(
     ticker: str,
     name: str,
     kind: str = "timeseries",
+    chart_type: str = "line",
     description: str | None = None,
     frequency: str | None = None,
     coverage: str | None = None,
@@ -53,9 +54,17 @@ def create_dataset(
 
     kind is "timeseries" for push() data or "file" for attach() (PDF/CSV)
     datasets.
+
+    chart_type ("line" or "stacked_bar") only matters for kind="timeseries" --
+    it controls how the frontend charts this dataset's metrics. "stacked_bar"
+    plots every metric in this dataset as a stacked segment per date, so keep
+    metrics that should chart together (e.g. a set of percentages that sum to
+    100%) in their own dataset rather than mixed with unrelated metrics.
     """
     if kind not in ("timeseries", "file"):
         raise ValueError("kind must be 'timeseries' or 'file'")
+    if chart_type not in ("line", "stacked_bar"):
+        raise ValueError("chart_type must be 'line' or 'stacked_bar'")
 
     resp = requests.post(
         f"{_base_url()}/datasets",
@@ -63,10 +72,48 @@ def create_dataset(
             "ticker": ticker,
             "name": name,
             "kind": kind,
+            "chart_type": chart_type,
             "description": description,
             "frequency": frequency,
             "coverage": coverage,
         },
+        headers=_headers(),
+        timeout=30,
+    )
+    resp.raise_for_status()
+    return resp.json()
+
+
+def update_dataset(
+    dataset_id: int,
+    name: str | None = None,
+    description: str | None = None,
+    frequency: str | None = None,
+    coverage: str | None = None,
+    chart_type: str | None = None,
+) -> dict:
+    """
+    Change an existing dataset's metadata -- e.g. switching chart_type from
+    "line" to "stacked_bar" -- without recreating it and losing its pushed
+    history. Only pass the fields you want to change; the rest are left as-is.
+    """
+    if chart_type is not None and chart_type not in ("line", "stacked_bar"):
+        raise ValueError("chart_type must be 'line' or 'stacked_bar'")
+
+    fields = {
+        "name": name,
+        "description": description,
+        "frequency": frequency,
+        "coverage": coverage,
+        "chart_type": chart_type,
+    }
+    updates = {k: v for k, v in fields.items() if v is not None}
+    if not updates:
+        raise ValueError("pass at least one field to update")
+
+    resp = requests.patch(
+        f"{_base_url()}/datasets/{dataset_id}",
+        json=updates,
         headers=_headers(),
         timeout=30,
     )

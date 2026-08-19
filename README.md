@@ -57,6 +57,7 @@ dataset = tcdata.create_dataset(
     ticker="AAPL",
     name="Daily Close Price",
     kind="timeseries",              # or "file" for PDF/CSV attachments
+    chart_type="line",              # or "stacked_bar" -- see below
     description="End-of-day close and adjusted close.",
     frequency="Daily",
     coverage="2020-present",
@@ -66,6 +67,25 @@ print(dataset["id"])  # save this -- you'll pass it to push()/attach() below
 
 You only own datasets you create — pushing to someone else's `dataset_id`
 is rejected.
+
+#### Chart type
+
+`chart_type` controls how the stock page charts this dataset's metrics:
+
+- `"line"` (default) — charts the first metric only, as a line.
+- `"stacked_bar"` — charts **every** metric in the dataset, stacked per date.
+  Use this for metrics that make sense summed together (e.g. a set of
+  percentages that add to 100%, or category counts). Keep unrelated metrics
+  in separate datasets rather than mixing them into one stacked chart.
+
+To change an existing dataset's chart type (or name/description/frequency/
+coverage) without recreating it and losing its pushed history:
+
+```python
+tcdata.update_dataset(dataset_id=dataset["id"], chart_type="stacked_bar")
+```
+
+Only pass the fields you want to change.
 
 ### 2. Push time-series data
 
