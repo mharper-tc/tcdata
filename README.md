@@ -61,12 +61,20 @@ dataset = tcdata.create_dataset(
     description="End-of-day close and adjusted close.",
     frequency="Daily",
     coverage="2020-present",
+    company_name="Apple Inc.",      # only matters the first time this ticker appears
+    company_sector="Technology",
 )
 print(dataset["id"])  # save this -- you'll pass it to push()/attach() below
 ```
 
 You only own datasets you create — pushing to someone else's `dataset_id`
 is rejected.
+
+If `ticker` has never been used before, a `companies` row is created for it
+automatically (falling back to the ticker itself as the name if you don't
+pass `company_name`) — otherwise the stock page has nothing to show and
+errors with "No company found". Only matters on the *first* dataset for a
+new ticker; existing tickers are never overwritten.
 
 #### Chart type
 

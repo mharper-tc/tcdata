@@ -16,7 +16,7 @@ import os
 import requests
 import pandas as pd
 
-__version__ = "0.4.0"
+__version__ = "0.5.0"
 
 DEFAULT_URL = "https://web-production-80d10.up.railway.app"
 
@@ -47,6 +47,8 @@ def create_dataset(
     description: str | None = None,
     frequency: str | None = None,
     coverage: str | None = None,
+    company_name: str | None = None,
+    company_sector: str | None = None,
 ) -> dict:
     """
     Create a new dataset you'll then push/attach data to. Returns the created
@@ -60,6 +62,12 @@ def create_dataset(
     plots every metric in this dataset as a stacked segment per date, so keep
     metrics that should chart together (e.g. a set of percentages that sum to
     100%) in their own dataset rather than mixed with unrelated metrics.
+
+    If this is the first dataset created for this ticker, a companies row is
+    auto-created too (so the stock page has something to show) -- pass
+    company_name/company_sector to set it properly, otherwise it falls back
+    to the ticker itself as the name. Ignored if the ticker already has a
+    companies row.
     """
     if kind not in ("timeseries", "file"):
         raise ValueError("kind must be 'timeseries' or 'file'")
@@ -76,6 +84,8 @@ def create_dataset(
             "description": description,
             "frequency": frequency,
             "coverage": coverage,
+            "company_name": company_name,
+            "company_sector": company_sector,
         },
         headers=_headers(),
         timeout=30,
