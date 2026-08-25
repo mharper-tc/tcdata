@@ -16,7 +16,7 @@ import os
 import requests
 import pandas as pd
 
-__version__ = "0.6.1"
+__version__ = "0.7.0"
 
 DEFAULT_URL = "https://web-production-80d10.up.railway.app"
 
@@ -209,7 +209,13 @@ def attach(dataset_id: int, filepath: str) -> dict:
     return resp.json()
 
 
-def post_desk_note(ticker: str, title: str, filepath: str, subtext: str | None = None) -> dict:
+def post_desk_note(
+    ticker: str,
+    title: str,
+    filepath: str,
+    subtext: str | None = None,
+    report_date: str | None = None,
+) -> dict:
     """
     Upload a desk note (PDF) for a ticker -- shows up in the Desk Notes
     section on that ticker's stock page. Simpler than create_dataset() +
@@ -217,8 +223,14 @@ def post_desk_note(ticker: str, title: str, filepath: str, subtext: str | None =
     created automatically, so there's no dataset_id to manage.
 
     subtext is an optional one-line summary shown under the note's title.
+    report_date ("YYYY-MM-DD") is the date the report is actually about --
+    distinct from when it happens to be uploaded. Defaults to the upload date
+    if not given.
 
-        tcdata.post_desk_note(ticker="MP1", title="Q3 thesis update", filepath="note.pdf")
+        tcdata.post_desk_note(
+            ticker="MP1", title="Q3 thesis update", filepath="note.pdf",
+            report_date="2026-08-24",
+        )
     """
     if not os.path.exists(filepath):
         raise FileNotFoundError(filepath)
@@ -227,6 +239,8 @@ def post_desk_note(ticker: str, title: str, filepath: str, subtext: str | None =
     data = {"ticker": ticker, "title": title}
     if subtext:
         data["subtext"] = subtext
+    if report_date:
+        data["report_date"] = report_date
     with open(filepath, "rb") as f:
         resp = requests.post(
             f"{_base_url()}/desk-notes",

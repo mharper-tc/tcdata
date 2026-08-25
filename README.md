@@ -158,6 +158,7 @@ tcdata.post_desk_note(
     ticker="AAPL",
     title="Q3 thesis update",
     filepath="q3_thesis.pdf",
+    report_date="2026-08-24",  # the date the report is about, not today's date
 )
 ```
 
