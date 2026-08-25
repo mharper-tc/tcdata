@@ -147,6 +147,25 @@ Clients download these through an entitlement-checked signed URL — there's
 no public link, so `attach()` is all you need to do; access control is
 handled elsewhere (the admin portal's entitlements).
 
+### 4. Post a desk note
+
+Desk notes show up in their own "Desk Notes" section on a ticker's stock
+page, above the datasets. No `create_dataset()` call needed — your "Desk
+Notes" collection for that ticker is found or created automatically:
+
+```python
+tcdata.post_desk_note(
+    ticker="AAPL",
+    title="Q3 thesis update",
+    filepath="q3_thesis.pdf",
+)
+```
+
+Each call to this always adds a new note (it doesn't overwrite a previous
+one, even with the same title/filename). Like file datasets, access is
+controlled by entitlements on the underlying "Desk Notes" dataset — grant it
+from the admin portal same as anything else for that ticker.
+
 ## Errors
 
 Every call raises on failure (`requests.HTTPError` or a `ValueError` for bad
