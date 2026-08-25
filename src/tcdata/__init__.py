@@ -16,7 +16,7 @@ import os
 import requests
 import pandas as pd
 
-__version__ = "0.6.0"
+__version__ = "0.6.1"
 
 DEFAULT_URL = "https://web-production-80d10.up.railway.app"
 
@@ -209,12 +209,14 @@ def attach(dataset_id: int, filepath: str) -> dict:
     return resp.json()
 
 
-def post_desk_note(ticker: str, title: str, filepath: str) -> dict:
+def post_desk_note(ticker: str, title: str, filepath: str, subtext: str | None = None) -> dict:
     """
     Upload a desk note (PDF) for a ticker -- shows up in the Desk Notes
     section on that ticker's stock page. Simpler than create_dataset() +
     attach(): your "Desk Notes" collection for this ticker is found or
     created automatically, so there's no dataset_id to manage.
+
+    subtext is an optional one-line summary shown under the note's title.
 
         tcdata.post_desk_note(ticker="MP1", title="Q3 thesis update", filepath="note.pdf")
     """
@@ -222,10 +224,13 @@ def post_desk_note(ticker: str, title: str, filepath: str) -> dict:
         raise FileNotFoundError(filepath)
 
     filename = os.path.basename(filepath)
+    data = {"ticker": ticker, "title": title}
+    if subtext:
+        data["subtext"] = subtext
     with open(filepath, "rb") as f:
         resp = requests.post(
             f"{_base_url()}/desk-notes",
-            data={"ticker": ticker, "title": title},
+            data=data,
             files={"file": (filename, f)},
             headers=_headers(),
             timeout=60,
