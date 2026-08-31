@@ -1,6 +1,6 @@
 [project]
 name = "tcdata"
-version = "0.7.0"
+version = "0.8.0"
 description = "Taylor Collison alt-data client library"
 requires-python = ">=3.9"
 dependencies = [

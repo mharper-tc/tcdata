@@ -215,28 +215,36 @@ def post_desk_note(
     filepath: str,
     subtext: str | None = None,
     report_date: str | None = None,
+    kind: str = "desk_notes",
 ) -> dict:
     """
-    Upload a desk note (PDF) for a ticker -- shows up in the Desk Notes
-    section on that ticker's stock page. Simpler than create_dataset() +
-    attach(): your "Desk Notes" collection for this ticker is found or
+    Upload a desk note or formal note (PDF) for a ticker -- shows up in the
+    corresponding section on that ticker's stock page. Simpler than
+    create_dataset() + attach(): your collection for this ticker is found or
     created automatically, so there's no dataset_id to manage.
 
     subtext is an optional one-line summary shown under the note's title.
     report_date ("YYYY-MM-DD") is the date the report is actually about --
     distinct from when it happens to be uploaded. Defaults to the upload date
     if not given.
+    kind is "desk_notes" (default) or "formal_notes".
 
         tcdata.post_desk_note(
             ticker="MP1", title="Q3 thesis update", filepath="note.pdf",
             report_date="2026-08-24",
         )
+        tcdata.post_desk_note(
+            ticker="MP1", title="Initiation of Coverage", filepath="report.pdf",
+            kind="formal_notes",
+        )
     """
     if not os.path.exists(filepath):
         raise FileNotFoundError(filepath)
+    if kind not in ("desk_notes", "formal_notes"):
+        raise ValueError("kind must be 'desk_notes' or 'formal_notes'")
 
     filename = os.path.basename(filepath)
-    data = {"ticker": ticker, "title": title}
+    data = {"ticker": ticker, "title": title, "kind": kind}
     if subtext:
         data["subtext"] = subtext
     if report_date:
