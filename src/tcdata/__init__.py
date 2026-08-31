@@ -12,11 +12,12 @@ Requires the TC_DATA_KEY environment variable (the analyst's API key).
 The wide -> narrow melt happens here, so scrapers stay simple.
 """
 
+import mimetypes
 import os
 import requests
 import pandas as pd
 
-__version__ = "0.7.0"
+__version__ = "0.8.1"
 
 DEFAULT_URL = "https://web-production-80d10.up.railway.app"
 
@@ -201,7 +202,7 @@ def attach(dataset_id: int, filepath: str) -> dict:
         resp = requests.post(
             f"{_base_url()}/upload",
             data={"dataset_id": dataset_id},
-            files={"file": (filename, f)},
+            files={"file": (filename, f, mimetypes.guess_type(filename)[0] or "application/octet-stream")},
             headers=_headers(),
             timeout=60,
         )
@@ -253,7 +254,7 @@ def post_desk_note(
         resp = requests.post(
             f"{_base_url()}/desk-notes",
             data=data,
-            files={"file": (filename, f)},
+            files={"file": (filename, f, mimetypes.guess_type(filename)[0] or "application/octet-stream")},
             headers=_headers(),
             timeout=60,
         )
