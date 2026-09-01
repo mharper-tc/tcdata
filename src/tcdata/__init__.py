@@ -17,7 +17,7 @@ import os
 import requests
 import pandas as pd
 
-__version__ = "0.8.1"
+__version__ = "0.9.0"
 
 DEFAULT_URL = "https://web-production-80d10.up.railway.app"
 
@@ -58,11 +58,15 @@ def create_dataset(
     kind is "timeseries" for push() data or "file" for attach() (PDF/CSV)
     datasets.
 
-    chart_type ("line" or "stacked_bar") only matters for kind="timeseries" --
-    it controls how the frontend charts this dataset's metrics. "stacked_bar"
-    plots every metric in this dataset as a stacked segment per date, so keep
-    metrics that should chart together (e.g. a set of percentages that sum to
-    100%) in their own dataset rather than mixed with unrelated metrics.
+    chart_type ("line", "stacked_bar", or "interactive") only matters for
+    kind="timeseries" -- it controls how the frontend charts this dataset's
+    metrics. "stacked_bar" plots every metric in this dataset as a stacked
+    segment per date, so keep metrics that should chart together (e.g. a set
+    of percentages that sum to 100%) in their own dataset rather than mixed
+    with unrelated metrics. "interactive" is for a dataset with more than one
+    unrelated metric column (e.g. "100G Enabled" and "Enabled Locations") --
+    it shows one metric at a time as a line chart, with buttons to switch
+    between columns.
 
     If this is the first dataset created for this ticker, a companies row is
     auto-created too (so the stock page has something to show) -- pass
@@ -72,8 +76,8 @@ def create_dataset(
     """
     if kind not in ("timeseries", "file"):
         raise ValueError("kind must be 'timeseries' or 'file'")
-    if chart_type not in ("line", "stacked_bar"):
-        raise ValueError("chart_type must be 'line' or 'stacked_bar'")
+    if chart_type not in ("line", "stacked_bar", "interactive"):
+        raise ValueError("chart_type must be 'line', 'stacked_bar', or 'interactive'")
 
     resp = requests.post(
         f"{_base_url()}/datasets",
@@ -105,11 +109,12 @@ def update_dataset(
 ) -> dict:
     """
     Change an existing dataset's metadata -- e.g. switching chart_type from
-    "line" to "stacked_bar" -- without recreating it and losing its pushed
-    history. Only pass the fields you want to change; the rest are left as-is.
+    "line" to "stacked_bar" or "interactive" -- without recreating it and
+    losing its pushed history. Only pass the fields you want to change; the
+    rest are left as-is.
     """
-    if chart_type is not None and chart_type not in ("line", "stacked_bar"):
-        raise ValueError("chart_type must be 'line' or 'stacked_bar'")
+    if chart_type is not None and chart_type not in ("line", "stacked_bar", "interactive"):
+        raise ValueError("chart_type must be 'line', 'stacked_bar', or 'interactive'")
 
     fields = {
         "name": name,
